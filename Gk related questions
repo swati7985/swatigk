@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GK Master - GK Quiz</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:15px;
+    transition:0.3s;
+}
+
+body.dark{
+    background:#121212;
+}
+
+.container{
+    width:100%;
+    max-width:520px;
+    background:white;
+    border-radius:22px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+.dark .container{
+    background:#222;
+    color:white;
+}
+
+h1{
+    text-align:center;
+    margin-top:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#777;
+}
+
+.dark .subtitle{
+    color:#ccc;
+}
+
+.btn{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+    border:0;
+    border-radius:12px;
+    font-size:16px;
+    cursor:pointer;
+    background:#667eea;
+    color:white;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.category{
+    background:#f1f3ff;
+    color:#333;
+}
+
+.dark .category{
+    background:#333;
+    color:white;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+#timer{
+    font-weight:bold;
+    color:#e53935;
+}
+
+.progress{
+    width:100%;
+    height:9px;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+    margin:15px 0;
+}
+
+#progressBar{
+    height:100%;
+    width:0%;
+    background:#667eea;
+    transition:.3s;
+}
+
+.option{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    border:2px solid #ddd;
+    background:white;
+    border-radius:12px;
+    text-align:left;
+    font-size:16px;
+}
+
+.dark .option{
+    background:#333;
+    color:white;
+    border-color:#555;
+}
+
+.option:hover{
+    border-color:#667eea;
+}
+
+.correct{
+    background:#c8f7c5 !important;
+    border-color:green !important;
+}
+
+.wrong{
+    background:#ffc7c7 !important;
+    border-color:red !important;
+}
+
+.hidden{
+    display:none;
+}
+
+.score{
+    text-align:center;
+    font-size:22px;
+}
+
+.small{
+    text-align:center;
+    color:#777;
+}
+
+.dark .small{
+    color:#ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home">
+
+    <div class="top">
+        <h1>🧠 GK Master</h1>
+        <button onclick="toggleDark()">🌙</button>
+    </div>
+
+    <p class="subtitle">Test your General Knowledge!</p>
+
+    <h3>📚 Category चुनें</h3>
+
+    <button class="btn category" onclick="startQuiz('India')">
+        🇮🇳 India GK
+    </button>
+
+    <button class="btn category" onclick="startQuiz('World')">
+        🌎 World GK
+    </button>
+
+    <button class="btn category" onclick="startQuiz('Science')">
+        🔬 Science GK
+    </button>
+
+    <button class="btn category" onclick="startQuiz('History')">
+        📜 History GK
+    </button>
+
+    <button class="btn category" onclick="startQuiz('Mixed')">
+        🎯 Mixed GK
+    </button>
+
+    <p class="small">
+        🏆 Best Score: <span id="bestScore">0</span>
+    </p>
+
+</div>
+
+
+<!-- QUIZ -->
+<div id="quiz" class="hidden">
+
+    <div class="top">
+        <b id="questionNumber">Question 1/10</b>
+        <span id="timer">⏱️ 15</span>
+    </div>
+
+    <div class="progress">
+        <div id="progressBar"></div>
+    </div>
+
+    <h2 id="question"></h2>
+
+    <div id="options"></div>
+
+    <button class="btn" onclick="nextQuestion()">
+        Next ➡️
+    </button>
+
+</div>
+
+
+<!-- RESULT -->
+<div id="result" class="hidden">
+
+    <h1>🏆 Quiz Complete!</h1>
+
+    <div class="score">
+        <p id="scoreText"></p>
+        <p id="percentage"></p>
+    </div>
+
+    <p id="message" class="small"></p>
+
+    <button class="btn" onclick="goHome()">
+        🏠 Home
+    </button>
+
+    <button class="btn" onclick="restartQuiz()">
+        🔄 Play Again
+    </button>
+
+</div>
+
+</div>
+
+
+<script>
+
+const questionBank = {
+
+India:[
+{
+q:"भारत की राजधानी क्या है?",
+o:["मुंबई","दिल्ली","पटना","जयपुर"],
+a:"दिल्ली"
+},
+{
+q:"भारत का राष्ट्रीय पशु कौन है?",
+o:["शेर","बाघ","हाथी","हिरण"],
+a:"बाघ"
+},
+{
+q:"भारत का राष्ट्रीय पक्षी कौन है?",
+o:["मोर","तोता","कबूतर","हंस"],
+a:"मोर"
+},
+{
+q:"भारत का राष्ट्रीय फूल कौन सा है?",
+o:["गुलाब","कमल","सूरजमुखी","चमेली"],
+a:"कमल"
+},
+{
+q:"ताजमहल कहाँ स्थित है?",
+o:["दिल्ली","आगरा","पटना","जयपुर"],
+a:"आगरा"
+}
+],
+
+World:[
+{
+q:"दुनिया का सबसे बड़ा महासागर कौन सा है?",
+o:["अटलांटिक","हिंद","प्रशांत","आर्कटिक"],
+a:"प्रशांत"
+},
+{
+q:"विश्व का सबसे ऊँचा पर्वत कौन सा है?",
+o:["K2","एवरेस्ट","कंचनजंगा","नंदा देवी"],
+a:"एवरेस्ट"
+},
+{
+q:"जापान की राजधानी क्या है?",
+o:["बीजिंग","टोक्यो","सियोल","बैंकॉक"],
+a:"टोक्यो"
+},
+{
+q:"फ्रांस की राजधानी क्या है?",
+o:["पेरिस","रोम","लंदन","बर्लिन"],
+a:"पेरिस"
+},
+{
+q:"दुनिया का सबसे बड़ा महाद्वीप कौन सा है?",
+o:["अफ्रीका","यूरोप","एशिया","ऑस्ट्रेलिया"],
+a:"एशिया"
+}
+],
+
+Science:[
+{
+q:"सूर्य के सबसे निकट कौन सा ग्रह है?",
+o:["पृथ्वी","मंगल","बुध","शुक्र"],
+a:"बुध"
+},
+{
+q:"पानी का रासायनिक सूत्र क्या है?",
+o:["CO2","H2O","O2","NaCl"],
+a:"H2O"
+},
+{
+q:"मानव शरीर में रक्त को पंप कौन करता है?",
+o:["फेफड़े","हृदय","मस्तिष्क","गुर्दे"],
+a:"हृदय"
+},
+{
+q:"पौधे भोजन किस प्रक्रिया से बनाते हैं?",
+o:["श्वसन","प्रकाश संश्लेषण","पाचन","वाष्पीकरण"],
+a:"प्रकाश संश्लेषण"
+},
+{
+q:"पृथ्वी का उपग्रह कौन है?",
+o:["सूर्य","चंद्रमा","मंगल","शुक्र"],
+a:"चंद्रमा"
+}
+],
+
+History:[
+{
+q:"भारत को स्वतंत्रता कब मिली?",
+o:["1945","1947","1950","1952"],
+a:"1947"
+},
+{
+q:"महात्मा गांधी का जन्म कब हुआ?",
+o:["1869","1875","1885","1890"],
+a:"1869"
+},
+{
+q:"भारत का संविधान कब लागू हुआ?",
+o:["15 अगस्त 1947","26 जनवरी 1950","26 नवंबर 1949","2 अक्टूबर 1950"],
+a:"26 जनवरी 1950"
+},
+{
+q:"लाल किला कहाँ है?",
+o:["मुंबई","दिल्ली","आगरा","लखनऊ"],
+a:"दिल्ली"
+},
+{
+q:"झाँसी की रानी का नाम क्या था?",
+o:["रानी लक्ष्मीबाई","रानी दुर्गावती","रानी अहिल्याबाई","रानी पद्मिनी"],
+a:"रानी लक्ष्मीबाई"
+}
+]
+
+};
+
+
+let questions=[];
+let current=0;
+let score=0;
+let timer;
+let time=15;
+let selected=false;
+let category="";
+
+
+function toggleDark(){
+
+    document.body.classList.toggle("dark");
+
+}
+
+
+function startQuiz(type){
+
+    category=type;
+
+    if(type==="Mixed"){
+
+        questions=[
+            ...questionBank.India,
+            ...questionBank.World,
+            ...questionBank.Science,
+            ...questionBank.History
+        ];
+
+        questions.sort(()=>Math.random()-.5);
+
+        questions=questions.slice(0,10);
+
+    }else{
+
+        questions=[...questionBank[type]];
+
+        questions.sort(()=>Math.random()-.5);
+
+    }
+
+    current=0;
+    score=0;
+
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("quiz").classList.remove("hidden");
+
+    showQuestion();
+
+}
+
+
+function showQuestion(){
+
+    selected=false;
+    time=15;
+
+    clearInterval(timer);
+
+    const q=questions[current];
+
+    document.getElementById("questionNumber").innerText=
+        "Question "+(current+1)+"/"+questions.length;
+
+    document.getElementById("question").innerText=q.q;
+
+    document.getElementById("progressBar").style.width=
+        ((current+1)/questions.length*100)+"%";
+
+    let options=[...q.o];
+
+    options.sort(()=>Math.random()-.5);
+
+    let html="";
+
+    options.forEach(option=>{
+
+        html+=`
+        <button class="option"
+        onclick="checkAnswer(this,'${option}')">
+        ${option}
+        </button>
+        `;
+
+    });
+
+    document.getElementById("options").innerHTML=html;
+
+    document.getElementById("timer").innerText="⏱️ "+time;
+
+    timer=setInterval(()=>{
+
+        time--;
+
+        document.getElementById("timer").innerText="⏱️ "+time;
+
+        if(time<=0){
+
+            clearInterval(timer);
+
+            if(!selected){
+
+                selected=true;
+
+                alert("⏰ Time Up!");
+
+            }
+
+        }
+
+    },1000);
+
+}
+
+
+function checkAnswer(button,answer){
+
+    if(selected)return;
+
+    selected=true;
+
+    clearInterval(timer);
+
+    const correct=questions[current].a;
+
+    const buttons=document.querySelectorAll(".option");
+
+    buttons.forEach(btn=>{
+
+        if(btn.innerText.trim()===correct){
+            btn.classList.add("correct");
+        }
+
+    });
+
+    if(answer===correct){
+
+        button.classList.add("correct");
+
+        score++;
+
+    }else{
+
+        button.classList.add("wrong");
+
+    }
+
+}
+
+
+function nextQuestion(){
+
+    if(!selected){
+
+        alert("पहले answer चुनें!");
+
+        return;
+
+    }
+
+    current++;
+
+    if(current<questions.length){
+
+        showQuestion();
+
+    }else{
+
+        showResult();
+
+    }
+
+}
+
+
+function showResult(){
+
+    clearInterval(timer);
+
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    const percentage=Math.round(
+        score/questions.length*100
+    );
+
+    document.getElementById("scoreText").innerText=
+        "आपका Score: "+score+" / "+questions.length;
+
+    document.getElementById("percentage").innerText=
+        "Percentage: "+percentage+"%";
+
+    let message="";
+
+    if(percentage>=80){
+        message="🎉 बहुत बढ़िया! आप GK Master हैं!";
+    }else if(percentage>=50){
+        message="👍 अच्छा प्रयास! थोड़ी और practice करें.";
+    }else{
+        message="💪 कोई बात नहीं! फिर से कोशिश करें.";
+    }
+
+    document.getElementById("message").innerText=message;
+
+    let best=localStorage.getItem("bestScore")||0;
+
+    if(score>best){
+
+        localStorage.setItem("bestScore",score);
+        best=score;
+
+    }
+
+    document.getElementById("bestScore").innerText=best;
+
+}
+
+
+function goHome(){
+
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+
+    document.getElementById("bestScore").innerText=
+        localStorage.getItem("bestScore")||0;
+
+}
+
+
+function restartQuiz(){
+
+    startQuiz(category);
+
+}
+
+
+document.getElementById("bestScore").innerText=
+    localStorage.getItem("bestScore")||0;
+
+</script>
+
+</body>
+</html>
